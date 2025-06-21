@@ -1,0 +1,38 @@
+plugins {
+    alias(libs.plugins.shadow)
+}
+
+sourceCompatibility = 21
+targetCompatibility = 21
+
+repositories {
+    maven { url 'https://www.jitpack.io' }
+    maven { url 'https://repo.opencollab.dev/maven-releases/' }
+    maven { url 'https://repo.opencollab.dev/maven-snapshots/' }
+    maven { url 'https://storehouse.okaeri.eu/repository/maven-public/' }
+}
+
+dependencies {
+    compileOnly "org.allaymc.allay:api:0.5.0"
+
+    implementation project(':api')
+    implementation project(':common:loader-utils')
+}
+
+processResources {
+    filesMatching('plugin.json') {
+        expand 'pluginVersion': project.ext.fullVersion
+    }
+}
+
+shadowJar {
+    archiveFileName = "LuckPerms-Allay-${project.ext.fullVersion}.jar"
+
+    from {
+        project(':allay').tasks.shadowJar.archiveFile
+    }
+}
+
+artifacts {
+    archives shadowJar
+}
