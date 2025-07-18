@@ -28,6 +28,7 @@ package me.lucko.luckperms.allay;
 import me.lucko.luckperms.allay.calculator.AllayCalculatorFactory;
 import me.lucko.luckperms.allay.context.AllayContextManager;
 import me.lucko.luckperms.allay.listener.AllayConnectionListener;
+import me.lucko.luckperms.allay.listener.AllayPermissionSyncListener;
 import me.lucko.luckperms.common.api.LuckPermsApiProvider;
 import me.lucko.luckperms.common.calculator.CalculatorFactory;
 import me.lucko.luckperms.common.command.CommandManager;
@@ -134,7 +135,7 @@ public class LPAllayPlugin extends AbstractLuckPermsPlugin {
 
     @Override
     protected void performFinalSetup() {
-        // NO-OP
+        getApiProvider().getEventBus().subscribe(new AllayPermissionSyncListener());
     }
 
     @Override

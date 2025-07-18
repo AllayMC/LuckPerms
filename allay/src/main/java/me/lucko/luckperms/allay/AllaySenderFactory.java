@@ -33,7 +33,6 @@ import net.luckperms.api.util.Tristate;
 import org.allaymc.api.command.CommandSender;
 import org.allaymc.api.entity.interfaces.EntityPlayer;
 import org.allaymc.api.i18n.LangCode;
-import org.allaymc.api.permission.Permission;
 import org.allaymc.api.registry.Registries;
 import org.allaymc.api.server.Server;
 
@@ -73,26 +72,26 @@ public class AllaySenderFactory extends SenderFactory<LPAllayPlugin, CommandSend
 
     @Override
     protected Tristate getPermissionValue(CommandSender sender, String node) {
-        return sender.hasPermission(getPermissionOrCreate(node)) ? Tristate.TRUE : Tristate.FALSE;
+        if (sender instanceof EntityPlayer player) {
+            var user = getPlugin().getUserManager().getIfLoaded(player.getUUID());
+            if (user != null) {
+                return user.getCachedData().getPermissionData().checkPermission(node);
+            }
+
+            return Tristate.FALSE;
+        }
+
+        return isConsole(sender) ? Tristate.TRUE : Tristate.FALSE;
     }
 
     @Override
     protected boolean hasPermission(CommandSender sender, String node) {
-        return sender.hasPermission(getPermissionOrCreate(node));
+        return getPermissionValue(sender, node).asBoolean();
     }
 
     @Override
     protected void performCommand(CommandSender sender, String command) {
         Registries.COMMANDS.execute(sender, command);
-    }
-
-    private Permission getPermissionOrCreate(String name) {
-        var permission = Permission.get(name);
-        if (permission == null) {
-            permission = Permission.create(name);
-        }
-
-        return permission;
     }
 
     @Override
