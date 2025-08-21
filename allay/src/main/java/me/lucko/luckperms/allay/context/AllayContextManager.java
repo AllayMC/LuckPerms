@@ -38,6 +38,6 @@ public class AllayContextManager extends SimpleContextManager<EntityPlayer, Enti
 
     @Override
     public UUID getUniqueId(EntityPlayer player) {
-        return player.getUUID();
+        return player.getLoginData().getUuid();
     }
 }

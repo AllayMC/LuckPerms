@@ -47,13 +47,14 @@ public class AllayConnectionListener extends AbstractConnectionListener {
     @EventHandler(priority = 1)
     public void onPlayerLogin(PlayerLoginEvent event) {
         var player = event.getPlayer();
+        var loginData = player.getLoginData();
         if (this.plugin.getConfiguration().get(ConfigKeys.DEBUG_LOGINS)) {
-            this.plugin.getLogger().info("Processing pre-login for " + player.getUUID() + " - " + player.getOriginName());
+            this.plugin.getLogger().info("Processing pre-login for " + loginData.getUuid() + " - " + player.getOriginName());
         }
 
         if (event.isCancelled()) {
             // another plugin has disallowed the login.
-            this.plugin.getLogger().info("Another plugin has cancelled the connection for " + player.getUUID() + " - " + player.getOriginName() + ". No permissions data will be loaded.");
+            this.plugin.getLogger().info("Another plugin has cancelled the connection for " + loginData.getUuid() + " - " + player.getOriginName() + ". No permissions data will be loaded.");
             return;
         }
 
@@ -68,11 +69,11 @@ public class AllayConnectionListener extends AbstractConnectionListener {
                - creating a user instance in the UserManager for this connection.
                - setting up cached data. */
             try {
-                var user = loadUser(player.getUUID(), player.getOriginName());
-                this.recordConnection(player.getUUID());
-                this.plugin.getEventDispatcher().dispatchPlayerLoginProcess(player.getUUID(), player.getOriginName(), user);
+                var user = loadUser(loginData.getUuid(), player.getOriginName());
+                this.recordConnection(loginData.getUuid());
+                this.plugin.getEventDispatcher().dispatchPlayerLoginProcess(loginData.getUuid(), player.getOriginName(), user);
             } catch (Exception exception) {
-                this.plugin.getLogger().severe("Exception occurred whilst loading data for " + player.getUUID() + " - " + player.getOriginName(), exception);
+                this.plugin.getLogger().severe("Exception occurred whilst loading data for " + loginData.getUuid() + " - " + player.getOriginName(), exception);
 
                 // there was some error loading
                 if (this.plugin.getConfiguration().get(ConfigKeys.CANCEL_FAILED_LOGINS)) {
@@ -82,7 +83,7 @@ public class AllayConnectionListener extends AbstractConnectionListener {
                     event.cancel();
                 }
 
-                this.plugin.getEventDispatcher().dispatchPlayerLoginProcess(player.getUUID(), player.getOriginName(), null);
+                this.plugin.getEventDispatcher().dispatchPlayerLoginProcess(loginData.getUuid(), player.getOriginName(), null);
             }
         });
     }
@@ -90,21 +91,26 @@ public class AllayConnectionListener extends AbstractConnectionListener {
     @EventHandler(priority = 1)
     public void onPlayerJoin(PlayerJoinEvent event) {
         var player = event.getPlayer();
+        var loginData = player.getLoginData();
         if (this.plugin.getConfiguration().get(ConfigKeys.DEBUG_LOGINS)) {
-            this.plugin.getLogger().info("Processing post-login for " + player.getUUID() + " - " + player.getOriginName());
+            this.plugin.getLogger().info("Processing post-login for " + loginData.getUuid() + " - " + player.getOriginName());
         }
 
-        var user = this.plugin.getUserManager().getIfLoaded(player.getUUID());
+        var user = this.plugin.getUserManager().getIfLoaded(loginData.getUuid());
         if (user != null) {
             return;
         }
 
-        if (!getUniqueConnections().contains(player.getUUID())) {
-            this.plugin.getLogger().warn("User " + player.getUUID() + " - " + player.getOriginName() +
-                                         " doesn't have data pre-loaded, they have never been processed during pre-login in this session.");
+        if (!getUniqueConnections().contains(loginData.getUuid())) {
+            this.plugin.getLogger().warn(
+                    "User " + loginData.getUuid() + " - " + player.getOriginName() +
+                    " doesn't have data pre-loaded, they have never been processed during pre-login in this session."
+            );
         } else {
-            this.plugin.getLogger().warn("User " + player.getUUID() + " - " + player.getOriginName() +
-                                         " doesn't currently have data pre-loaded, but they have been processed before in this session.");
+            this.plugin.getLogger().warn(
+                    "User " + loginData.getUuid() + " - " + player.getOriginName() +
+                    " doesn't currently have data pre-loaded, but they have been processed before in this session."
+            );
         }
 
         if (this.plugin.getConfiguration().get(ConfigKeys.CANCEL_FAILED_LOGINS)) {
@@ -122,6 +128,6 @@ public class AllayConnectionListener extends AbstractConnectionListener {
     // Wait until the last priority to unload, so plugins can still perform permission checks on this event
     @EventHandler(priority = Integer.MAX_VALUE)
     public void onPlayerQuit(PlayerQuitEvent event) {
-        handleDisconnect(event.getPlayer().getUUID());
+        handleDisconnect(event.getPlayer().getLoginData().getUuid());
     }
 }

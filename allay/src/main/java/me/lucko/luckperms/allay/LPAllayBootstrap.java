@@ -184,7 +184,8 @@ public class LPAllayBootstrap implements LuckPermsBootstrap, LoaderBootstrap, Bo
 
     @Override
     public Optional<UUID> lookupUniqueId(String username) {
-        return Optional.ofNullable(Server.getInstance().getPlayerService().getOnlinePlayerByName(username)).map(EntityPlayer::getUUID);
+        return Optional.ofNullable(Server.getInstance().getPlayerService().getOnlinePlayerByName(username))
+                .map(entityPlayer -> entityPlayer.getLoginData().getUuid());
     }
 
     @Override

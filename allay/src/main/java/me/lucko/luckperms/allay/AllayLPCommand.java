@@ -46,18 +46,42 @@ public class AllayLPCommand extends SimpleCommand {
 
     @Override
     public void prepareCommandTree(CommandTree tree) {
-        tree.getRoot()
-                // General overloads
-                .key("sync").root()
-                .key("info").root()
-                .key("editor").root()
-                .key("verbose").enums("verboseToggle", "on", "record", "off", "upload").str("filter").optional().root()
-                .key("verbose").key("command").enums("verboseSelect", "me", "player").str("command").root()
-                .key("tree").str("scope").optional().str("player").optional().root()
+        var root = tree.getRoot();
+        root.key("sync");
+        root.key("info");
+        root.key("editor");
 
-                .key("createtrack").str("track").root()
-                .key("deletetrack").str("track").root()
-                .key("listtracks");
+        root.key("verbose")
+                .enums("verboseToggle", "on", "record", "off", "upload")
+                .str("filter").optional();
+        root.key("tree")
+                .str("scope").optional()
+                .str("player").optional();
+        root.key("search")
+                .str("comparison").optional()
+                .str("permission");
+        root.key("networksync");
+
+        root.key("import"); // TODO: /lp import <file | code --upload> [--replace]
+        root.key("export")
+                .str("file")
+                .enums("exportEnum", "--upload");
+
+        root.key("reloadconfig");
+        root.key("bulkupdate");
+        root.key("translations");
+
+        root.key("creategroup")
+                .str("group")
+                .intNum("weight").optional()
+                .str("displayname").optional();
+        root.key("deletegroup")
+                .str("group");
+        root.key("listgroups");
+
+        root.key("createtrack").str("track");
+        root.key("deletetrack").str("track");
+        root.key("listtracks");
     }
 
     @Override
