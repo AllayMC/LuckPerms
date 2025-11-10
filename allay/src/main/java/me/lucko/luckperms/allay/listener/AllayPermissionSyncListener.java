@@ -40,7 +40,7 @@ public class AllayPermissionSyncListener implements LuckPermsEventListener {
 
     private void onUserDataRecalculate(UserDataRecalculateEvent event) {
         var user = event.getUser();
-        var player = Server.getInstance().getPlayerService().getPlayers().get(user.getUniqueId());
+        var player = Server.getInstance().getPlayerManager().getPlayers().get(user.getUniqueId());
         if (player != null) {
             var permissions = user.getCachedData().getPermissionData().getPermissionMap();
             for (var entry : permissions.entrySet()) {

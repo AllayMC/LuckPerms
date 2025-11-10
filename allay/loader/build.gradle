@@ -6,14 +6,11 @@ sourceCompatibility = 21
 targetCompatibility = 21
 
 repositories {
-    maven { url 'https://www.jitpack.io' }
-    maven { url 'https://repo.opencollab.dev/maven-releases/' }
-    maven { url 'https://repo.opencollab.dev/maven-snapshots/' }
-    maven { url 'https://storehouse.okaeri.eu/repository/maven-public/' }
+    maven { url 'https://central.sonatype.com/repository/maven-snapshots/' }
 }
 
 dependencies {
-    compileOnly "org.allaymc.allay:api:0.7.1"
+    compileOnly "org.allaymc.allay:api:0.17.0-SNAPSHOT"
 
     implementation project(':api')
     implementation project(':common:loader-utils')

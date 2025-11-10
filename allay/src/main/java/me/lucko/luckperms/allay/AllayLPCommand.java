@@ -27,12 +27,12 @@ package me.lucko.luckperms.allay;
 
 import me.lucko.luckperms.common.command.CommandManager;
 import me.lucko.luckperms.common.command.utils.ArgumentTokenizer;
+import org.allaymc.api.command.Command;
 import org.allaymc.api.command.CommandResult;
 import org.allaymc.api.command.CommandSender;
-import org.allaymc.api.command.SimpleCommand;
 import org.allaymc.api.command.tree.CommandTree;
 
-public class AllayLPCommand extends SimpleCommand {
+public class AllayLPCommand extends Command {
     private final LPAllayPlugin plugin;
     private final CommandManager commandManager;
 

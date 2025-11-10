@@ -184,7 +184,7 @@ public class LPAllayPlugin extends AbstractLuckPermsPlugin {
 
     @Override
     public Stream<Sender> getOnlineSenders() {
-        var playerService = Server.getInstance().getPlayerService();
+        var playerService = Server.getInstance().getPlayerManager();
         return Stream.concat(
                 Stream.of(getConsoleSender()),
                 playerService.getPlayers().values().stream().map(p -> this.senderFactory.wrap(p))

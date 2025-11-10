@@ -34,7 +34,7 @@ import me.lucko.luckperms.common.plugin.logging.PluginLogger;
 import me.lucko.luckperms.common.plugin.logging.Slf4jPluginLogger;
 import me.lucko.luckperms.common.plugin.scheduler.SchedulerAdapter;
 import net.luckperms.api.platform.Platform;
-import org.allaymc.api.entity.component.player.EntityPlayerNetworkComponent;
+import org.allaymc.api.entity.component.EntityPlayerClientComponent;
 import org.allaymc.api.entity.interfaces.EntityPlayer;
 import org.allaymc.api.plugin.Plugin;
 import org.allaymc.api.server.Server;
@@ -179,12 +179,12 @@ public class LPAllayBootstrap implements LuckPermsBootstrap, LoaderBootstrap, Bo
 
     @Override
     public Optional<EntityPlayer> getPlayer(UUID uniqueId) {
-        return Optional.ofNullable(Server.getInstance().getPlayerService().getPlayers().get(uniqueId));
+        return Optional.ofNullable(Server.getInstance().getPlayerManager().getPlayers().get(uniqueId));
     }
 
     @Override
     public Optional<UUID> lookupUniqueId(String username) {
-        return Optional.ofNullable(Server.getInstance().getPlayerService().getOnlinePlayerByName(username))
+        return Optional.ofNullable(Server.getInstance().getPlayerManager().getOnlinePlayerByName(username))
                 .map(entityPlayer -> entityPlayer.getLoginData().getUuid());
     }
 
@@ -195,24 +195,24 @@ public class LPAllayBootstrap implements LuckPermsBootstrap, LoaderBootstrap, Bo
 
     @Override
     public int getPlayerCount() {
-        return Server.getInstance().getPlayerService().getPlayerCount();
+        return Server.getInstance().getPlayerManager().getPlayerCount();
     }
 
     @Override
     public Collection<String> getPlayerList() {
-        return Server.getInstance().getPlayerService().getPlayers().values().stream()
-                .map(EntityPlayerNetworkComponent::getOriginName)
+        return Server.getInstance().getPlayerManager().getPlayers().values().stream()
+                .map(EntityPlayerClientComponent::getOriginName)
                 .toList();
     }
 
     @Override
     public Collection<UUID> getOnlinePlayers() {
-        return new ArrayList<>(Server.getInstance().getPlayerService().getPlayers().keySet());
+        return new ArrayList<>(Server.getInstance().getPlayerManager().getPlayers().keySet());
     }
 
     @Override
     public boolean isPlayerOnline(UUID uniqueId) {
-        var player = Server.getInstance().getPlayerService().getPlayers().get(uniqueId);
+        var player = Server.getInstance().getPlayerManager().getPlayers().get(uniqueId);
         return player != null;
     }
 }

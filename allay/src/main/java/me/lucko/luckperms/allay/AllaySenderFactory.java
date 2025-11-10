@@ -32,7 +32,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.luckperms.api.util.Tristate;
 import org.allaymc.api.command.CommandSender;
 import org.allaymc.api.entity.interfaces.EntityPlayer;
-import org.allaymc.api.i18n.LangCode;
+import org.allaymc.api.message.LangCode;
 import org.allaymc.api.registry.Registries;
 import org.allaymc.api.server.Server;
 
@@ -67,7 +67,7 @@ public class AllaySenderFactory extends SenderFactory<LPAllayPlugin, CommandSend
             locale = player.getLoginData().getLangCode();
         }
         var rendered = TranslationManager.render(message, Objects.requireNonNull(locale, "locale").name());
-        sender.sendText(LegacyComponentSerializer.legacySection().serialize(rendered));
+        sender.sendMessage(LegacyComponentSerializer.legacySection().serialize(rendered));
     }
 
     @Override
