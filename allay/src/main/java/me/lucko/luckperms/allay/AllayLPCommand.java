@@ -32,6 +32,11 @@ import org.allaymc.api.command.CommandResult;
 import org.allaymc.api.command.CommandSender;
 import org.allaymc.api.command.tree.CommandTree;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class AllayLPCommand extends Command {
     private final LPAllayPlugin plugin;
     private final CommandManager commandManager;
@@ -87,8 +92,7 @@ public class AllayLPCommand extends Command {
     @Override
     public CommandResult execute(CommandSender sender, String[] args) {
         var wrapped = this.plugin.getSenderFactory().wrap(sender);
-        var arguments = ArgumentTokenizer.EXECUTE.tokenizeInput(args);
-        this.commandManager.executeCommand(wrapped, "lp", arguments);
+        this.commandManager.executeCommand(wrapped, "lp", new ArrayList<>(List.of(args)));
         return CommandResult.success(null);
     }
 }

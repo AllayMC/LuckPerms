@@ -32,6 +32,7 @@ import me.lucko.luckperms.allay.listener.AllayPermissionSyncListener;
 import me.lucko.luckperms.common.api.LuckPermsApiProvider;
 import me.lucko.luckperms.common.calculator.CalculatorFactory;
 import me.lucko.luckperms.common.command.CommandManager;
+import me.lucko.luckperms.common.config.ConfigKeys;
 import me.lucko.luckperms.common.config.generic.adapter.ConfigurationAdapter;
 import me.lucko.luckperms.common.context.manager.ContextManager;
 import me.lucko.luckperms.common.event.AbstractEventBus;
@@ -48,18 +49,25 @@ import me.lucko.luckperms.common.model.manager.user.UserManager;
 import me.lucko.luckperms.common.plugin.AbstractLuckPermsPlugin;
 import me.lucko.luckperms.common.plugin.util.AbstractConnectionListener;
 import me.lucko.luckperms.common.sender.Sender;
+import me.lucko.luckperms.common.storage.misc.DataConstraints;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.query.QueryOptions;
 import org.allaymc.api.registry.Registries;
 import org.allaymc.api.server.Server;
 
 import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
  * LuckPerms implementation for the Allay API.
  */
 public class LPAllayPlugin extends AbstractLuckPermsPlugin {
+
+    private static final Pattern BEDROCK_NAME_PATTERN = Pattern.compile("^(?! )([a-zA-Z0-9_ ]{2,15}[a-zA-Z0-9_])(?<! )$");
+    private static final Predicate<String> BEDROCK_PLAYER_USERNAME_TEST = s -> !s.isEmpty() && BEDROCK_NAME_PATTERN.matcher(s).matches();
+
     private final LPAllayBootstrap bootstrap;
 
     private AllaySenderFactory senderFactory;
@@ -194,5 +202,20 @@ public class LPAllayPlugin extends AbstractLuckPermsPlugin {
     @Override
     public Sender getConsoleSender() {
         return this.senderFactory.wrap(Server.getInstance());
+    }
+
+    @Override
+    public boolean testUsernameValidity(String username) {
+        // if the username doesn't even pass the lenient test, don't bother going any further
+        // it's either empty, or too long to fit in the sql column
+        if (!DataConstraints.PLAYER_USERNAME_TEST_LENIENT.test(username)) {
+            return false;
+        }
+
+        // if invalid usernames are allowed in the config, set valid to true, otherwise, use the more strict test
+        boolean valid = getConfiguration().get(ConfigKeys.ALLOW_INVALID_USERNAMES) || BEDROCK_PLAYER_USERNAME_TEST.test(username);
+
+        // fire the event & return
+        return getEventDispatcher().dispatchUsernameValidityCheck(username, valid);
     }
 }
