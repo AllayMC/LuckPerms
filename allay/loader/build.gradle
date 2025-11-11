@@ -1,25 +1,27 @@
 plugins {
     alias(libs.plugins.shadow)
+    alias(libs.plugins.allaygradle)
 }
 
 sourceCompatibility = 21
 targetCompatibility = 21
 
-repositories {
-    maven { url 'https://central.sonatype.com/repository/maven-snapshots/' }
+allay {
+    api = "0.17.0-SNAPSHOT"
+
+    plugin {
+        it.entrance = "me.lucko.luckperms.allay.loader.AllayLoaderPlugin"
+        it.name = "LuckPerms"
+        it.description = "A permissions plugin."
+        it.authors = ["Luck"]
+        it.version = project.ext.fullVersion
+        it.website = "https://luckperms.net"
+    }
 }
 
 dependencies {
-    compileOnly "org.allaymc.allay:api:0.17.0-SNAPSHOT"
-
     implementation project(':api')
     implementation project(':common:loader-utils')
-}
-
-processResources {
-    filesMatching('plugin.json') {
-        expand 'pluginVersion': project.ext.fullVersion
-    }
 }
 
 shadowJar {

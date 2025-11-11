@@ -1,8 +1,0 @@
-{
-  "entrance": "me.lucko.luckperms.allay.loader.AllayLoaderPlugin",
-  "name": "LuckPerms",
-  "description": "A permissions plugin.",
-  "authors": ["Luck"],
-  "version": "${pluginVersion}",
-  "website": "https://luckperms.net"
-}
