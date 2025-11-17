@@ -27,117 +27,63 @@ package me.lucko.luckperms.allay;
 
 import me.lucko.luckperms.common.config.generic.adapter.ConfigurationAdapter;
 import me.lucko.luckperms.common.plugin.LuckPermsPlugin;
-import org.yaml.snakeyaml.LoaderOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.allaymc.api.utils.config.Config;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class AllayConfigAdapter implements ConfigurationAdapter {
     private final LPAllayPlugin plugin;
     private final Path path;
-
-    private Map<String, Object> config = new HashMap<>();
+    private Config config;
 
     public AllayConfigAdapter(LPAllayPlugin plugin, Path path) {
         this.plugin = plugin;
         this.path = path;
-        this.reload();
+        reload();
     }
 
     @Override
     public void reload() {
-        try (var inputStream = Files.newInputStream(path)) {
-            var yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
-            var loaded = yaml.load(inputStream);
-            if (loaded instanceof Map) {
-                this.config = (Map<String, Object>) loaded;
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        this.config = new Config(this.path.toFile(), Config.YAML);
     }
 
     @Override
     public String getString(String path, String def) {
-        var val = getValue(path);
-        return val instanceof String str ? str : def;
+        return this.config.getString(path, def);
     }
 
     @Override
     public int getInteger(String path, int def) {
-        var val = getValue(path);
-        if (val instanceof Number number) {
-            return number.intValue();
-        }
-
-        try {
-            return Integer.parseInt(String.valueOf(val));
-        } catch (Exception e) {
-            return def;
-        }
+        return this.config.getInt(path, def);
     }
 
     @Override
     public boolean getBoolean(String path, boolean def) {
-        var val = getValue(path);
-        if (val instanceof Boolean bool) {
-            return bool;
-        }
-
-        if (val instanceof String str) {
-            return Boolean.parseBoolean(str);
-        }
-
-        return def;
+        return this.config.getBoolean(path, def);
     }
 
     @Override
     public List<String> getStringList(String path, List<String> def) {
-        var val = getValue(path);
-        if (val instanceof List<?> list) {
-            return list.stream().map(String::valueOf).collect(Collectors.toList());
-        }
-
-        return def;
+        List<String> list = this.config.getStringList(path);
+        return list == null ? def : list;
     }
 
     @Override
     public Map<String, String> getStringMap(String path, Map<String, String> def) {
-        var val = getValue(path);
-        if (val instanceof Map<?, ?> map) {
-            Map<String, String> result = new HashMap<>();
-            for (var entry : map.entrySet()) {
-                result.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
-            }
-            return result;
-        }
-        return def;
-    }
-
-    private Object getValue(String path) {
-        if (this.config == null) {
-            return null;
+        Map<String, String> map = new HashMap<>();
+        var section = this.config.getSection(path);
+        if (section == null) {
+            return def;
         }
 
-        var keys = path.split("\\.");
-        Object current = config;
-
-        for (var key : keys) {
-            if (!(current instanceof Map<?, ?> map)) {
-                return null;
-            }
-
-            current = map.get(key);
+        for (String key : section.getKeys(false)) {
+            map.put(key, section.getString(key));
         }
 
-        return current;
+        return map;
     }
 
     @Override
