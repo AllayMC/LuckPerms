@@ -36,10 +36,7 @@ public class AllaySchedulerAdapter extends AbstractJavaScheduler implements Sche
 
     public AllaySchedulerAdapter(LPAllayBootstrap bootstrap) {
         super(bootstrap);
-        this.sync = r -> Server.getInstance().getScheduler().scheduleDelayed(bootstrap.getLoader(), () -> {
-            r.run();
-            return false;
-        }, 0);
+        this.sync = r -> Server.getInstance().getScheduler().runLater(bootstrap.getLoader(), r);
     }
 
     @Override
