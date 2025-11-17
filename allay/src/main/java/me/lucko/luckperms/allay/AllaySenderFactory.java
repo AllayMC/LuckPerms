@@ -48,8 +48,8 @@ public class AllaySenderFactory extends SenderFactory<LPAllayPlugin, CommandSend
 
     @Override
     protected UUID getUniqueId(CommandSender sender) {
-        if (sender instanceof EntityPlayer player) {
-            return player.getLoginData().getUuid();
+        if (sender.isPlayer()) {
+            return sender.asPlayer().getLoginData().getUuid();
         }
 
         return SERVER_UUID;
@@ -63,8 +63,8 @@ public class AllaySenderFactory extends SenderFactory<LPAllayPlugin, CommandSend
     @Override
     protected void sendMessage(CommandSender sender, Component message) {
         LangCode locale = LangCode.en_US;
-        if (sender instanceof EntityPlayer player) {
-            locale = player.getLoginData().getLangCode();
+        if (sender.isPlayer()) {
+            locale = sender.asPlayer().getLoginData().getLangCode();
         }
         var rendered = TranslationManager.render(message, Objects.requireNonNull(locale, "locale").name());
         sender.sendMessage(LegacyComponentSerializer.legacySection().serialize(rendered));
@@ -72,7 +72,8 @@ public class AllaySenderFactory extends SenderFactory<LPAllayPlugin, CommandSend
 
     @Override
     protected Tristate getPermissionValue(CommandSender sender, String node) {
-        if (sender instanceof EntityPlayer player) {
+        if (sender.isPlayer()) {
+            var player = sender.asPlayer();
             var user = getPlugin().getUserManager().getIfLoaded(player.getLoginData().getUuid());
             if (user != null) {
                 return user.getCachedData().getPermissionData().checkPermission(node);
