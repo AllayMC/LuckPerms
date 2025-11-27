@@ -27,30 +27,28 @@ package me.lucko.luckperms.allay.listener;
 
 import me.lucko.luckperms.common.event.LuckPermsEventListener;
 import net.luckperms.api.event.EventBus;
+import net.luckperms.api.event.context.ContextUpdateEvent;
 import net.luckperms.api.event.user.UserDataRecalculateEvent;
-import org.allaymc.api.permission.Permission;
+import org.allaymc.api.player.Player;
 import org.allaymc.api.server.Server;
 
-public class AllayPermissionSyncListener implements LuckPermsEventListener {
+public class AllayPermissionChangeListener implements LuckPermsEventListener {
     @Override
+    @SuppressWarnings("resource")
     public void bind(EventBus bus) {
-        //noinspection resource
         bus.subscribe(UserDataRecalculateEvent.class, this::onUserDataRecalculate);
+        bus.subscribe(ContextUpdateEvent.class, this::onContextUpdate);
     }
 
     private void onUserDataRecalculate(UserDataRecalculateEvent event) {
         var user = event.getUser();
         var player = Server.getInstance().getPlayerManager().getPlayers().get(user.getUniqueId());
         if (player != null) {
-            var permissions = user.getCachedData().getPermissionData().getPermissionMap();
-            for (var entry : permissions.entrySet()) {
-                var permission = Permission.get(entry.getKey());
-                if (permission == null) {
-                    permission = Permission.create(entry.getKey());
-                }
-
-                player.setPermission(permission, entry.getValue());
-            }
+            player.getControlledEntity().onPermissionChange();
         }
+    }
+
+    private void onContextUpdate(ContextUpdateEvent e) {
+        e.getSubject(Player.class).ifPresent(p -> p.getControlledEntity().onPermissionChange());
     }
 }

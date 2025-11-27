@@ -27,17 +27,17 @@ package me.lucko.luckperms.allay.context;
 
 import me.lucko.luckperms.allay.LPAllayPlugin;
 import me.lucko.luckperms.common.context.manager.SimpleContextManager;
-import org.allaymc.api.entity.interfaces.EntityPlayer;
+import org.allaymc.api.player.Player;
 
 import java.util.UUID;
 
-public class AllayContextManager extends SimpleContextManager<EntityPlayer, EntityPlayer> {
+public class AllayContextManager extends SimpleContextManager<Player, Player> {
     public AllayContextManager(LPAllayPlugin plugin) {
-        super(plugin, EntityPlayer.class, EntityPlayer.class);
+        super(plugin, Player.class, Player.class);
     }
 
     @Override
-    public UUID getUniqueId(EntityPlayer player) {
+    public UUID getUniqueId(Player player) {
         return player.getLoginData().getUuid();
     }
 }

@@ -34,8 +34,7 @@ import me.lucko.luckperms.common.plugin.logging.PluginLogger;
 import me.lucko.luckperms.common.plugin.logging.Slf4jPluginLogger;
 import me.lucko.luckperms.common.plugin.scheduler.SchedulerAdapter;
 import net.luckperms.api.platform.Platform;
-import org.allaymc.api.entity.component.EntityPlayerClientComponent;
-import org.allaymc.api.entity.interfaces.EntityPlayer;
+import org.allaymc.api.player.Player;
 import org.allaymc.api.plugin.Plugin;
 import org.allaymc.api.server.Server;
 
@@ -178,19 +177,19 @@ public class LPAllayBootstrap implements LuckPermsBootstrap, LoaderBootstrap, Bo
     }
 
     @Override
-    public Optional<EntityPlayer> getPlayer(UUID uniqueId) {
+    public Optional<Player> getPlayer(UUID uniqueId) {
         return Optional.ofNullable(Server.getInstance().getPlayerManager().getPlayers().get(uniqueId));
     }
 
     @Override
     public Optional<UUID> lookupUniqueId(String username) {
-        return Optional.ofNullable(Server.getInstance().getPlayerManager().getOnlinePlayerByName(username))
-                .map(entityPlayer -> entityPlayer.getLoginData().getUuid());
+        return Optional.ofNullable(Server.getInstance().getPlayerManager().getPlayerByName(username))
+                .map(player -> player.getLoginData().getUuid());
     }
 
     @Override
     public Optional<String> lookupUsername(UUID uniqueId) {
-        return getPlayer(uniqueId).map(EntityPlayer::getOriginName);
+        return getPlayer(uniqueId).map(Player::getOriginName);
     }
 
     @Override
@@ -201,7 +200,7 @@ public class LPAllayBootstrap implements LuckPermsBootstrap, LoaderBootstrap, Bo
     @Override
     public Collection<String> getPlayerList() {
         return Server.getInstance().getPlayerManager().getPlayers().values().stream()
-                .map(EntityPlayerClientComponent::getOriginName)
+                .map(Player::getOriginName)
                 .toList();
     }
 

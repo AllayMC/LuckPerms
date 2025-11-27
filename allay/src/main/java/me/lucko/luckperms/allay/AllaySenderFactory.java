@@ -31,7 +31,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.luckperms.api.util.Tristate;
 import org.allaymc.api.command.CommandSender;
-import org.allaymc.api.entity.interfaces.EntityPlayer;
 import org.allaymc.api.message.LangCode;
 import org.allaymc.api.registry.Registries;
 import org.allaymc.api.server.Server;
@@ -48,8 +47,8 @@ public class AllaySenderFactory extends SenderFactory<LPAllayPlugin, CommandSend
 
     @Override
     protected UUID getUniqueId(CommandSender sender) {
-        if (sender.isPlayer()) {
-            return sender.asPlayer().getLoginData().getUuid();
+        if (sender.isPlayer() && sender.asPlayer().isActualPlayer()) {
+            return sender.asPlayer().getController().getLoginData().getUuid();
         }
 
         return SERVER_UUID;
@@ -63,8 +62,8 @@ public class AllaySenderFactory extends SenderFactory<LPAllayPlugin, CommandSend
     @Override
     protected void sendMessage(CommandSender sender, Component message) {
         LangCode locale = LangCode.en_US;
-        if (sender.isPlayer()) {
-            locale = sender.asPlayer().getLoginData().getLangCode();
+        if (sender.isPlayer() && sender.asPlayer().isActualPlayer()) {
+            locale = sender.asPlayer().getController().getLoginData().getLangCode();
         }
         var rendered = TranslationManager.render(message, Objects.requireNonNull(locale, "locale").name());
         sender.sendMessage(LegacyComponentSerializer.legacySection().serialize(rendered));
@@ -72,8 +71,8 @@ public class AllaySenderFactory extends SenderFactory<LPAllayPlugin, CommandSend
 
     @Override
     protected Tristate getPermissionValue(CommandSender sender, String node) {
-        if (sender.isPlayer()) {
-            var player = sender.asPlayer();
+        if (sender.isPlayer() && sender.asPlayer().isActualPlayer()) {
+            var player = sender.asPlayer().getController();
             var user = getPlugin().getUserManager().getIfLoaded(player.getLoginData().getUuid());
             if (user != null) {
                 return user.getCachedData().getPermissionData().checkPermission(node);

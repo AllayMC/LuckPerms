@@ -32,9 +32,9 @@ import me.lucko.luckperms.common.locale.TranslationManager;
 import me.lucko.luckperms.common.plugin.util.AbstractConnectionListener;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.allaymc.api.eventbus.EventHandler;
-import org.allaymc.api.eventbus.event.player.PlayerJoinEvent;
-import org.allaymc.api.eventbus.event.player.PlayerLoginEvent;
-import org.allaymc.api.eventbus.event.player.PlayerQuitEvent;
+import org.allaymc.api.eventbus.event.server.PlayerJoinEvent;
+import org.allaymc.api.eventbus.event.server.PlayerLoginEvent;
+import org.allaymc.api.eventbus.event.server.PlayerQuitEvent;
 
 public class AllayConnectionListener extends AbstractConnectionListener {
     private final LPAllayPlugin plugin;
@@ -44,18 +44,20 @@ public class AllayConnectionListener extends AbstractConnectionListener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = 1)
+    // Wait until the last priority to handle, so other plugins can cancel this event
+    @EventHandler(priority = -Integer.MAX_VALUE)
     public void onPlayerLogin(PlayerLoginEvent event) {
         var player = event.getPlayer();
         var loginData = player.getLoginData();
-        if (this.plugin.getConfiguration().get(ConfigKeys.DEBUG_LOGINS)) {
-            this.plugin.getLogger().info("Processing pre-login for " + loginData.getUuid() + " - " + player.getOriginName());
-        }
 
         if (event.isCancelled()) {
             // another plugin has disallowed the login.
             this.plugin.getLogger().info("Another plugin has cancelled the connection for " + loginData.getUuid() + " - " + player.getOriginName() + ". No permissions data will be loaded.");
             return;
+        }
+
+        if (this.plugin.getConfiguration().get(ConfigKeys.DEBUG_LOGINS)) {
+            this.plugin.getLogger().info("Processing login for " + loginData.getUuid() + " - " + player.getOriginName());
         }
 
         this.plugin.getBootstrap().getScheduler().executeAsync(() -> {
@@ -70,7 +72,7 @@ public class AllayConnectionListener extends AbstractConnectionListener {
                - setting up cached data. */
             try {
                 var user = loadUser(loginData.getUuid(), player.getOriginName());
-                this.recordConnection(loginData.getUuid());
+                recordConnection(loginData.getUuid());
                 this.plugin.getEventDispatcher().dispatchPlayerLoginProcess(loginData.getUuid(), player.getOriginName(), user);
             } catch (Exception exception) {
                 this.plugin.getLogger().severe("Exception occurred whilst loading data for " + loginData.getUuid() + " - " + player.getOriginName(), exception);
@@ -88,16 +90,19 @@ public class AllayConnectionListener extends AbstractConnectionListener {
         });
     }
 
-    @EventHandler(priority = 1)
+    @EventHandler(priority = Integer.MAX_VALUE)
     public void onPlayerJoin(PlayerJoinEvent event) {
         var player = event.getPlayer();
         var loginData = player.getLoginData();
         if (this.plugin.getConfiguration().get(ConfigKeys.DEBUG_LOGINS)) {
-            this.plugin.getLogger().info("Processing post-login for " + loginData.getUuid() + " - " + player.getOriginName());
+            this.plugin.getLogger().info("Processing join for " + loginData.getUuid() + " - " + player.getOriginName());
         }
 
         var user = this.plugin.getUserManager().getIfLoaded(loginData.getUuid());
         if (user != null) {
+            var contextManager = this.plugin.getContextManager();
+            player.getControlledEntity().setPermissionCalculator(new AllayPermissionCalculator(player, user, contextManager::getQueryOptions));
+            player.getControlledEntity().onPermissionChange();
             return;
         }
 
@@ -119,14 +124,12 @@ public class AllayConnectionListener extends AbstractConnectionListener {
             event.getPlayer().disconnect(LegacyComponentSerializer.legacySection().serialize(reason));
         } else {
             // just send a message
-            if (player.isInitialized()) {
-                Message.LOADING_STATE_ERROR.send(this.plugin.getSenderFactory().wrap(player));
-            }
+            Message.LOADING_STATE_ERROR.send(this.plugin.getSenderFactory().wrap(player.getControlledEntity()));
         }
     }
 
     // Wait until the last priority to unload, so plugins can still perform permission checks on this event
-    @EventHandler(priority = Integer.MAX_VALUE)
+    @EventHandler(priority = -Integer.MAX_VALUE)
     public void onPlayerQuit(PlayerQuitEvent event) {
         handleDisconnect(event.getPlayer().getLoginData().getUuid());
     }

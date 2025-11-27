@@ -26,23 +26,20 @@
 package me.lucko.luckperms.allay;
 
 import me.lucko.luckperms.common.command.CommandManager;
-import me.lucko.luckperms.common.command.utils.ArgumentTokenizer;
 import org.allaymc.api.command.Command;
 import org.allaymc.api.command.CommandResult;
 import org.allaymc.api.command.CommandSender;
 import org.allaymc.api.command.tree.CommandTree;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class AllayLPCommand extends Command {
     private final LPAllayPlugin plugin;
     private final CommandManager commandManager;
 
     public AllayLPCommand(LPAllayPlugin plugin, CommandManager commandManager) {
-        super("luckperms", "LuckPerms commands");
+        super("luckperms", "LuckPerms commands", null);
         aliases.add("lp");
 
         this.plugin = plugin;
