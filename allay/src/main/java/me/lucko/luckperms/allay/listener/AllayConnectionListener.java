@@ -32,9 +32,9 @@ import me.lucko.luckperms.common.locale.TranslationManager;
 import me.lucko.luckperms.common.plugin.util.AbstractConnectionListener;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.allaymc.api.eventbus.EventHandler;
-import org.allaymc.api.eventbus.event.server.PlayerJoinEvent;
 import org.allaymc.api.eventbus.event.server.PlayerLoginEvent;
 import org.allaymc.api.eventbus.event.server.PlayerQuitEvent;
+import org.allaymc.api.eventbus.event.server.PlayerSpawnEvent;
 
 public class AllayConnectionListener extends AbstractConnectionListener {
     private final LPAllayPlugin plugin;
@@ -81,8 +81,7 @@ public class AllayConnectionListener extends AbstractConnectionListener {
                 if (this.plugin.getConfiguration().get(ConfigKeys.CANCEL_FAILED_LOGINS)) {
                     // cancel the login attempt
                     var reason = TranslationManager.render(Message.LOADING_DATABASE_ERROR.build());
-                    event.setDisconnectReason(LegacyComponentSerializer.legacySection().serialize(reason));
-                    event.cancel();
+                    player.disconnect(LegacyComponentSerializer.legacySection().serialize(reason));
                 }
 
                 this.plugin.getEventDispatcher().dispatchPlayerLoginProcess(loginData.getUuid(), player.getOriginName(), null);
@@ -91,11 +90,11 @@ public class AllayConnectionListener extends AbstractConnectionListener {
     }
 
     @EventHandler(priority = Integer.MAX_VALUE)
-    public void onPlayerJoin(PlayerJoinEvent event) {
+    public void onPlayerSpawn(PlayerSpawnEvent event) {
         var player = event.getPlayer();
         var loginData = player.getLoginData();
         if (this.plugin.getConfiguration().get(ConfigKeys.DEBUG_LOGINS)) {
-            this.plugin.getLogger().info("Processing join for " + loginData.getUuid() + " - " + player.getOriginName());
+            this.plugin.getLogger().info("Processing spawn for " + loginData.getUuid() + " - " + player.getOriginName());
         }
 
         var user = this.plugin.getUserManager().getIfLoaded(loginData.getUuid());
@@ -121,7 +120,8 @@ public class AllayConnectionListener extends AbstractConnectionListener {
         if (this.plugin.getConfiguration().get(ConfigKeys.CANCEL_FAILED_LOGINS)) {
             // disconnect the user
             var reason = TranslationManager.render(Message.LOADING_DATABASE_ERROR.build());
-            event.getPlayer().disconnect(LegacyComponentSerializer.legacySection().serialize(reason));
+            event.setDisconnectReason(LegacyComponentSerializer.legacySection().serialize(reason));
+            event.cancel();
         } else {
             // just send a message
             Message.LOADING_STATE_ERROR.send(this.plugin.getSenderFactory().wrap(player.getControlledEntity()));
