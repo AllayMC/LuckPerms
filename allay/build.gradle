@@ -13,7 +13,7 @@ dependencies {
     implementation project(':common')
     compileOnly project(':common:loader-utils')
 
-    compileOnly "org.allaymc.allay:api:0.17.0-SNAPSHOT"
+    compileOnly "org.allaymc.allay:api:0.17.0"
 }
 
 shadowJar {
